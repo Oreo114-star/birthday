@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Birthday Surprise ✨</title>
+
+  <!-- ===== CSS (from ii.css) ===== -->
+  <style>
+    :root {
+      --primary-color: #ff00ff;
+      --secondary-color: #00ffff;
+      --text-color: #fff;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      color: var(--text-color);
+      font-family: "Poppins", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      transition: background-color 2s ease;
+    }
+
+    body.sad-theme {
+      background-color: #1a1a2e;
+    }
+
+    .sad-theme .wishes {
+      color: #a5a5a5;
+    }
+
+    .sad-theme .star {
+      animation: slowTwinkle 4s infinite;
+    }
+
+    @keyframes slowTwinkle {
+      0%, 100% { opacity: 0.1; }
+      50% { opacity: 0.3; }
+    }
+
+    .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle var(--duration) infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+
+    .start-btn,
+    .choice-btn {
+      padding: 15px 30px;
+      font-size: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 2;
+    }
+
+    .start-btn {
+      animation: glow 2s infinite;
+    }
+
+    .choice-btn {
+      margin: 10px;
+      font-size: 18px;
+      opacity: 0;
+    }
+
+    .start-btn:hover,
+    .choice-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    @keyframes glow {
+      0% { box-shadow: 0 0 20px rgba(255, 0, 255, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(255, 0, 255, 0.8); }
+      100% { box-shadow: 0 0 20px rgba(255, 0, 255, 0.5); }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .wishes {
+      text-align: center;
+      font-size: 24px;
+      margin: 20px;
+      opacity: 0;
+      font-family: "Dancing Script", cursive;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .emoji {
+      position: absolute;
+      font-size: 30px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .neon-text {
+      text-shadow:
+        0 0 10px var(--primary-color),
+        0 0 20px var(--primary-color),
+        0 0 30px var(--primary-color);
+    }
+
+    .message-container {
+      max-width: 90%;
+      width: 800px;
+      text-align: center;
+      padding: 30px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .mute-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .mute-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+
+<body id="body" onclick="fullScreen()">
+  <div class="stars"></div>
+
+  <button class="start-btn" id="startBtn">Click to Start ✨</button>
+
+  <div id="wishesContainer" class="hidden">
+    <div id="wishes" class="wishes"></div>
+    <div id="choices" class="hidden">
+      <button class="choice-btn" onclick="makeChoice('sister')">my WIFE</button>
+      <button class="choice-btn" onclick="makeChoice('bestfriend')">MY TULIKA</button>
+    </div>
+  </div>
+
+  <!-- Audio -->
+  <audio id="bgMusic" src="https://hindi.djpunjab.app/load/MLNyCd86wmLEJPdPIiSd8Q==/Badhai%20Ho%20Badhai%20Janm%20Din%20Ki.mp3" loop></audio>
+  <audio id="sisterMusic" src="https://s320.djpunjab.is/data/48/55179/304011/Dil%20De%20Tukde%20-%20A%20Kay.mp3" loop></audio>
+  <audio id="bestFriendMusic" src="https://hindi.djpunjab.app/load/cPnz7r4F4iEtdhKQGvl6Jw==/Yaara%20Teri%20Yaari%20Happy.mp3" loop></audio>
+
+  <button id="muteButton" class="mute-btn">🔊</button>
+
+  <!-- ===== JavaScript (from jj.js) ===== -->
+  <script>
+    const wishes = [
+      "🌟 Dear AYUSHI... 🌟",
+      "On this special day... ✨",
+      "I want to tell you something from my heart...",
+      "You bring so much joy to everyone around you! 🎉",
+      "Your smile brightens up even the darkest days! 💫",
+      "Your kindness makes this world a better place! 💖",
+      "Happy Birthday! 🎂",
+      "But before we continue...",
+      "I have a special question for you... 🤔"
+    ];
+
+    const sisterChat = [
+      "TASHU? 🤔",
+      "You know what ..",
+      "I have something to confess... 💫",
+      "Happy Birthday to the most beautiful woman in my life❤️.",
+      "Today isn’t just the day you were born—it’s the day the world became💫",
+      "brighter, kinder, and more meaningful. And for me, it’s the day 💖 ",
+      "I celebrate the person who fills my life with love, strength, laughter, and purpose 💖.",
+      "From the moment you came into my life, everything changed💫.",
+      "You turned ordinary days into special memories and simple moments into treasures 💖.",
+      "Your smile has the power to lift my darkest moods, and your presence alone gives me peace.",
+      "You are my safe place, my biggest blessing,and the most important person in my life💫.",
+    ];
+
+    const bestFriendMessages = [
+    "I admire your strength more than you know💖.",
+    "Even on days when you feel tired or unappreciated, you continue to give love, care, and support to everyone around you.💫",
+    "Your smile has the power to lift my spirit instantly, and your voice is my favorite sound in the world.🎉",
+    "When I look at you, I don’t just see my wife—I see my future, my dreams, and my forever💖.",
+    "Thank you for standing by me in every phase of life—through good times and bad, through laughter and tears.🎉",
+    "Thank you for believing in me even when I doubted myself.💫",
+    "Your love has shaped me into a better person, and for that, I am endlessly grateful💖",
+    ];
+
+    function createStars() {
+      const starsContainer = document.querySelector(".stars");
+      for (let i = 0; i < 200; i++) {
+        const star = document.createElement("div");
+        star.className = "star";
+        star.style.width = `${Math.random() * 3}px`;
+        star.style.height = star.style.width;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.setProperty("--duration", `${Math.random() * 3 + 1}s`);
+        starsContainer.appendChild(star);
+      }
+    }
+
+    function createEmoji() {
+      const emojis = ["💖", "⭐", "✨", "🎉", "🎂"];
+      const emoji = document.createElement("div");
+      emoji.className = "emoji";
+      emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      emoji.style.left = Math.random() * window.innerWidth + "px";
+      emoji.style.top = "-50px";
+      document.body.appendChild(emoji);
+
+      emoji.animate(
+        [{ transform: "translateY(0)" },
+         { transform: `translateY(${window.innerHeight + 50}px)` }],
+        { duration: 3000, easing: "linear" }
+      ).onfinish = () => emoji.remove();
+    }
+
+    async function typeWriter(text) {
+      const el = document.getElementById("wishes");
+      el.style.opacity = 1;
+      el.innerHTML = "";
+      el.className = "wishes neon-text";
+      for (let c of text) {
+        el.innerHTML += c;
+        await new Promise(r => setTimeout(r, 80));
+      }
+      await new Promise(r => setTimeout(r, 1000));
+    }
+
+    let emojiInterval;
+    let isMuted = false;
+
+    document.getElementById("muteButton").onclick = () => {
+      isMuted = !isMuted;
+      document.querySelectorAll("audio").forEach(a => a.muted = isMuted);
+      muteButton.textContent = isMuted ? "🔇" : "🔊";
+    };
+
+    async function makeChoice(choice) {
+      clearInterval(emojiInterval);
+      document.getElementById("choices").style.display = "none";
+
+      if (choice === "sister") {
+        document.body.classList.add("sad-theme");
+        for (let msg of sisterChat) await typeWriter(msg);
+      } else {
+        document.body.classList.remove("sad-theme");
+        emojiInterval = setInterval(createEmoji, 300);
+        for (let msg of bestFriendMessages) await typeWriter(msg);
+      }
+    }
+
+    document.getElementById("startBtn").onclick = async () => {
+      startBtn.style.display = "none";
+      wishesContainer.classList.remove("hidden");
+      emojiInterval = setInterval(createEmoji, 300);
+      for (let w of wishes) await typeWriter(w);
+      choices.classList.remove("hidden");
+      document.querySelectorAll(".choice-btn").forEach(b => b.style.opacity = 1);
+    };
+
+    function fullScreen() {
+      if (document.body.requestFullscreen) {
+        document.body.requestFullscreen();
+      }
+    }
+
+    createStars();
+  </script>
+</body>
+</html>
